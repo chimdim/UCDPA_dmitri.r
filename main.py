@@ -21,7 +21,8 @@ data_folder = './data'
 def get_data(folder, name):
     for file_name in Path(folder).glob("*.csv"):
         if search(name, str(file_name)):
-            return pd.read_csv(file_name)
+            df = pd.read_csv(file_name)
+            return df
 
 
 # creating dataframes using function
@@ -31,15 +32,25 @@ df_recovered = get_data(data_folder, 'recovered')
 df_vaccine = get_data(data_folder, 'vaccine')
 
 # checking the structure
-print(df_confirmed)
+print(df_confirmed.head())
 
 # creating new dataframe for Germany
-df_confirmed_de = df_confirmed[df_confirmed['Country/Region'] == 'Germany']
-df_confirmed_uk = df_confirmed[df_confirmed['Country/Region'] == 'UK']
-df_confirmed_usa = df_confirmed[df_confirmed['Country/Region'] == 'USA']
+df_confirmed_de = df_confirmed[df_confirmed['Country'] == 'Germany']
+df_confirmed_ru = df_confirmed[df_confirmed['Country'] == 'Russia']
+df_confirmed_us = df_confirmed[df_confirmed['Country'] == 'US']
 
-print(df_confirmed_uk.head())
 
+
+# transform the dataset and merge all together
+
+
+
+
+
+
+# Sources
+
+# https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transpose.html
 
 
 
