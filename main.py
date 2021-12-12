@@ -114,20 +114,20 @@ df_confirmed_us = df_confirmed[df_confirmed['Country/Region'] == 'US']
 merged_df = pd.concat([df_confirmed_de, df_confirmed_ru, df_confirmed_us])
 # rework
 
-test = merged_df.melt(id_vars=['Country'], var_name='Date', value_name='value')
-test2 = test.pivot(index='Date', columns='Country', values="value")
+test = merged_df.melt(id_vars=['Country/Region'], var_name='Date', value_name='value')
+test2 = test.pivot(index='Date', columns='Country/Region', values="value")
 
 test2.index = pd.to_datetime(test2.index)
 test2.sort_index(inplace=True)
 
 # Todo: End create function
 
-# sns.set()
-# plt.plot(test2)
+sns.set()
+plt.plot(test2)
 # plt.title('Confirmed cases')
 # plt.ylabel('Amount')
 # plt.yticks()
-# plt.show()
+plt.show()
 # sns.set_theme(style="whitegrid")
 # sns.lineplot(data=test2, palette="tab10", linewidth=2.5)
 # plt.show()
