@@ -8,6 +8,7 @@
 
 # import libraries
 from pathlib import Path
+from datetime import datetime
 from re import search
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,20 +21,21 @@ import re
 csv_data_folder = './data'
 covid_api_url = "https://api.covid19api.com/summary"
 
-
 # REST API based on John Hopkins University COVID-19 dataset.
 response = requests.get(url=covid_api_url)
 
 # check for successfully request (status code 200)
 if response.status_code == 200:
     result = response.json()
+else:
+    print('connection error')
 
 # print(result)
 
 # get data for the countries into dataframe
 df = pd.json_normalize(result['Countries'])
 
-#print(df.info())
+# print(df.info())
 
 # List of columns to delete
 del_columns = ['ID', 'CountryCode', 'Slug', 'NewRecovered', 'TotalRecovered']
@@ -41,22 +43,28 @@ del_columns = ['ID', 'CountryCode', 'Slug', 'NewRecovered', 'TotalRecovered']
 df.drop(del_columns, axis=1, inplace=True)
 
 # create an overview of covid19 cases worldwide
-#df.loc['Total'] = df.sum(numeric_only=True)
+# df.loc['Total'] = df.sum(numeric_only=True)
 
-# check whether the data date is the same in all countries.
+
 # convert date to datetime Dtype and change the date format to YYYY-MM-DD using lambda function.
 df['Date'] = pd.to_datetime(df['Date'])
-df['Date'] = df.Date.apply(lambda x: x.strftime('%Y-%m-%d')).astype('datetime64[ns]')
+df['Date'] = df['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
-print('different-date', df[df['Date'] == df.loc[0, ['Date']]])
+# check whether the date of data is the same in all countries
+date_is_same = df['Date'].eq(df['Date'].iloc[0]).all()
 
+# if there are different days create a list with countries where the date != date in row 0.
+if not date_is_same:
+    date = df['Date'].iloc[0]
+    country_list = []
+    for index, val in df.iterrows():
+         if (str(val['Date']) != str(date)):
+             country_list.append(val['Country'])
 
-#print(df.head())
+    print(country_list)
 
-
-
-
-
+else:
+    print()
 
 
 
@@ -80,7 +88,6 @@ df_vaccine = get_data('vaccine')
 # print(df_confirmed.head())
 
 #
-
 
 
 #
