@@ -6,21 +6,15 @@
 # Covid-19 API: "https://api.covid19api.com/summary" - based on JHU
 
 
-
-
-# all data is stored in ./data folder
-
-
 # import libraries
 from pathlib import Path
-from datetime import datetime
 from re import search
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import requests
-import locale
+
 
 # Constants
 csv_data_folder = './data'
