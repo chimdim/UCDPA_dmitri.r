@@ -1,7 +1,12 @@
-# Data from https://coronavirus.jhu.edu/map.html  JHU CSSE
+# Data from https://coronavirus.jhu.edu/map.html  - John Hopkins University (JHU)
 # Raw data for covid cases: https://github.com/CSSEGISandData/COVID-19
 # Raw data for vaccine: https://github.com/govex/COVID-19/tree/master/data_tables/vaccine_data
 # last update: 07.12.2021
+
+# Covid-19 API: "https://api.covid19api.com/summary" - based on JHU
+
+
+
 
 # all data is stored in ./data folder
 
@@ -15,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import requests
-import re
+import locale
 
 # Constants
 csv_data_folder = './data'
@@ -30,8 +35,6 @@ if response.status_code == 200:
 else:
     print('connection error')
 
-# print(result)
-
 # get data for the countries into dataframe
 df = pd.json_normalize(result['Countries'])
 
@@ -39,33 +42,40 @@ df = pd.json_normalize(result['Countries'])
 
 # List of columns to delete
 del_columns = ['ID', 'CountryCode', 'Slug', 'NewRecovered', 'TotalRecovered']
-
 df.drop(del_columns, axis=1, inplace=True)
 
-# create an overview of covid19 cases worldwide
-# df.loc['Total'] = df.sum(numeric_only=True)
-
-
-# convert date to datetime Dtype and change the date format to YYYY-MM-DD using lambda function.
+# convert date to datetime type and change the date format to YYYY-MM-DD using lambda function.
 df['Date'] = pd.to_datetime(df['Date'])
 df['Date'] = df['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
 # check whether the date of data is the same in all countries
 date_is_same = df['Date'].eq(df['Date'].iloc[0]).all()
 
-# if there are different days create a list with countries where the date != date in row 0.
+# if there are any date different - create a list with countries where the date != date in first row.
 if not date_is_same:
     date = df['Date'].iloc[0]
     country_list = []
-    for index, val in df.iterrows():
-         if (str(val['Date']) != str(date)):
-             country_list.append(val['Country'])
 
-    print(country_list)
+    for index, row in df.iterrows():
+         if (row['Date'] != date):
+             country_list.append(row['Country'])
+
+    if len(country_list) == 1:
+        formatted_country_string = country_list[0]
+    else:
+        formatted_country_string = ', '.join(map(str, country_list))
+        print("The data available for {country} is not updated and therefore exact information about the worldwide Covid-19 status is not possible.".format(country=formatted_country_string))
 
 else:
-    print()
+    # create an overview of covid19 cases worldwide
+    total = df.sum(numeric_only=True)
 
+    print('###### Worldwide Covid-19 status update. Date: {date} ######'.format(date=pd.to_datetime(df['Date'].iloc[0]).strftime("%d %b %Y")))
+    print('Total cases: {:d}'.format(int(total['TotalConfirmed'])))
+    print('Total deaths: {:d}'.format(int(total['TotalDeaths'])))
+    print('New cases: {:d}'.format(int(total['NewConfirmed'])))
+    print('New deaths: {:d}'.format(int(total['NewDeaths'])))
+    print('###############################################')
 
 
 
