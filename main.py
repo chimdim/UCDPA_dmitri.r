@@ -74,27 +74,23 @@ else:
 
 
 # Getter for data from files.
-def get_data(name):
+def get_from_csv(name):
     for file_name in Path(csv_data_folder).glob("*.csv"):
         if search(name, str(file_name)):
-            df = pd.read_csv(file_name)
-            return df
+            data = pd.read_csv(file_name)
+            return data
 
 
 # creating dataframes using function
-df_confirmed = get_data('confirmed')
-df_deaths = get_data('deaths')
-df_recovered = get_data('recovered')
-df_vaccine = get_data('vaccine')
+df_confirmed = get_from_csv('confirmed')
+df_deaths = get_from_csv('deaths')
+df_recovered = get_from_csv('recovered')
+df_vaccine = get_from_csv('vaccine')
 
-# checking the structure
+
 # print(df_confirmed.head())
-# print(df_confirmed.head())
+print
 
-#
-
-
-#
 df_vaccine.rename(columns={'Country_Region': 'Country/Region', 'Province_State': 'Province/State'}, inplace=True)
 df_confirmed.drop(columns=['Province/State', 'Lat', 'Long'], inplace=True)
 
