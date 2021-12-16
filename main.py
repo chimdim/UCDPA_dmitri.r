@@ -17,13 +17,9 @@ import numpy as np
 import seaborn as sns
 import requests
 
-
 # Constants
 csv_data_folder = './data'
 covid_api_url = "https://api.covid19api.com/summary"
-years = mdates.YearLocator()
-months = mdates.MonthLocator()
-date_format = mdates.DateFormatter('%Y')
 
 
 #
@@ -93,21 +89,20 @@ df_confirmed = get_from_csv('confirmed')
 df_deaths = get_from_csv('deaths')
 df_vaccine = get_from_csv('vaccine')
 
-
 # print(df_confirmed.head())
 # print(df_deaths.head())
 # print(df_vaccine.head())
 
 df_vaccine.rename(columns={'Country_Region': 'Country/Region'}, inplace=True)
 
-df_vaccine.drop(columns=['Province_State'],axis=1, inplace=True)
-df_confirmed.drop(columns=['Province/State', 'Lat', 'Long'],axis=1, inplace=True)
-df_deaths.drop(columns=['Province/State', 'Lat', 'Long'],axis=1, inplace=True)
+df_vaccine.drop(columns=['Province_State'], axis=1, inplace=True)
+df_confirmed.drop(columns=['Province/State', 'Lat', 'Long'], axis=1, inplace=True)
+df_deaths.drop(columns=['Province/State', 'Lat', 'Long'], axis=1, inplace=True)
 
 
 # add "status" column to the dataframes
-#df_confirmed['Status'] = 'confirmed'
-#df_deaths['Status'] = 'death'
+# df_confirmed['Status'] = 'confirmed'
+# df_deaths['Status'] = 'death'
 
 def convert_data(country):
     confirmed = df_confirmed[df_confirmed['Country/Region'] == country]
@@ -135,30 +130,56 @@ df_de = convert_data('Germany')
 df_us = convert_data('US')
 
 
+print(df_ru[df_ru['Daily Confirmed']<0])
+
 # Todo: End create function
 
-def draw_chart(data,country,month):
-    fig, ax = plt.subplots(figsize=(10,10))
-    ax.plot(data['Date'], data['Confirmed'],data['Date'],data['Deaths'])
-    ax.set(xlabel="Date", ylabel="Confirmed cases", title="COVID-19 confirmed cases and deaths in "+country)
+def draw_chart(data, country, month):
+    color_confirmed='blue'
+    color_deaths='red'
 
-    ax.xaxis.set_major_locator(years)
-    ax.xaxis.set_minor_locator(months)
-    ax.xaxis.set_major_formatter(date_format)
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(8, 8))
+    ax1.plot(data['Date'], data['Confirmed'], color=color_confirmed)
+
+    ax2.bar(data['Date'], data['Daily Confirmed'], color=color_confirmed)
+
+    ax1.set_title("COVID-19 confirmed cases in " + country)
+    ax1.tick_params(axis='x', labelsize=10,  labelcolor='black')
+    ax1.tick_params(axis='y', labelsize=10, labelcolor=color_confirmed)
+    ax1.set_ylabel('Confirmed cases', color=color_confirmed, fontsize=12)
+    ax1.grid(True, alpha=.4)
+    ax2.grid(True, alpha=.4)
+    ax2.set_ylabel("Daily", color=color_deaths, fontsize=12)
+    ax2.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
+
+    ax3.set_title("COVID-19 deaths in " + country)
+    ax3.plot(data['Date'],data['Deaths'], color=color_deaths)
+    ax4.bar(data['Date'], data['Daily Deaths'], color=color_deaths, alpha=.6)
+    ax3.grid(True, alpha=.4)
+    ax4.grid(True, alpha=.4)
+
+
+
+    def onpick3(event):
+        ind = event.ind
+        print('onpick3 scatter:', ind, np.take(data['Date'], ind), np.take(data['Confirmed'], ind))
+
+    fig.canvas.mpl_connect('pick_event', onpick3)
 
     # fix to avoid scientific notation in the yaxis
-    ax.get_yaxis().set_major_formatter(
-        ticker.FuncFormatter(lambda x,p: format(int(x), ',')))
+    ax1.get_yaxis().set_major_formatter(
+        ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+    ax2.get_yaxis().set_major_formatter(
+        ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
 
-    plt.yticks()
+    fig.tight_layout()
     plt.show()
 
 
-draw_chart(df_de,'Germany',6)
-
-
+draw_chart(df_de, 'Germany', 6)
+draw_chart(df_ru, 'Russia', 6)
+draw_chart(df_us, 'USA', 6)
 
 # Sources
 
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transpose.html
-
