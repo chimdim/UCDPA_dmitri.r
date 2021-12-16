@@ -23,7 +23,7 @@ csv_data_folder = './data'
 covid_api_url = "https://api.covid19api.com/summary"
 years = mdates.YearLocator()
 months = mdates.MonthLocator()
-yearsFmt = mdates.DateFormatter('%Y')
+date_format = mdates.DateFormatter('%Y')
 
 
 #
@@ -140,19 +140,19 @@ df_us = convert_data('US')
 def draw_chart(data,country,month):
     fig, ax = plt.subplots(figsize=(10,10))
     ax.plot(data['Date'], data['Confirmed'],data['Date'],data['Deaths'])
-    ax.set(xlabel="Date", ylabel="Confirmed cases", title="COVID-19 confirmed cases and deaths in "+country )
+    ax.set(xlabel="Date", ylabel="Confirmed cases", title="COVID-19 confirmed cases and deaths in "+country)
+
     ax.xaxis.set_major_locator(years)
-    ax.xaxis.set_major_formatter(yearsFmt)
     ax.xaxis.set_minor_locator(months)
+    ax.xaxis.set_major_formatter(date_format)
+
+    # fix to avoid scientific notation in the yaxis
     ax.get_yaxis().set_major_formatter(
         ticker.FuncFormatter(lambda x,p: format(int(x), ',')))
-    # plt.title('Confirmed cases')
-    # plt.ylabel('Amount')
+
     plt.yticks()
     plt.show()
-    # sns.set_theme(style="whitegrid")
-    # sns.lineplot(data=test2, palette="tab10", linewidth=2.5)
-    # plt.show()
+
 
 draw_chart(df_de,'Germany',6)
 
