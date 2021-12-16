@@ -11,6 +11,8 @@ from pathlib import Path
 from re import search
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 import numpy as np
 import seaborn as sns
 import requests
@@ -19,6 +21,11 @@ import requests
 # Constants
 csv_data_folder = './data'
 covid_api_url = "https://api.covid19api.com/summary"
+years = mdates.YearLocator()
+months = mdates.MonthLocator()
+yearsFmt = mdates.DateFormatter('%Y')
+
+
 #
 # # REST API based on John Hopkins University COVID-19 dataset.
 # response = requests.get(url=covid_api_url)
@@ -84,13 +91,11 @@ def get_from_csv(name):
 # creating dataframes using function
 df_confirmed = get_from_csv('confirmed')
 df_deaths = get_from_csv('deaths')
-df_recovered = get_from_csv('recovered')
 df_vaccine = get_from_csv('vaccine')
 
 
 # print(df_confirmed.head())
 # print(df_deaths.head())
-# print(df_recovered.head())
 # print(df_vaccine.head())
 
 df_vaccine.rename(columns={'Country_Region': 'Country/Region'}, inplace=True)
@@ -98,66 +103,62 @@ df_vaccine.rename(columns={'Country_Region': 'Country/Region'}, inplace=True)
 df_vaccine.drop(columns=['Province_State'],axis=1, inplace=True)
 df_confirmed.drop(columns=['Province/State', 'Lat', 'Long'],axis=1, inplace=True)
 df_deaths.drop(columns=['Province/State', 'Lat', 'Long'],axis=1, inplace=True)
-df_recovered.drop(columns=['Province/State', 'Lat', 'Long'],axis=1, inplace=True)
+
 
 # add "status" column to the dataframes
-df_confirmed['Status'] = 'confirmed'
-df_recovered['Status'] = 'recovered'
-df_deaths['Status'] = 'death'
+#df_confirmed['Status'] = 'confirmed'
+#df_deaths['Status'] = 'death'
+
+def convert_data(country):
+    confirmed = df_confirmed[df_confirmed['Country/Region'] == country]
+    deaths = df_deaths[df_deaths['Country/Region'] == country]
+    confirmed_transformed = confirmed.melt(id_vars=['Country/Region'], var_name='Date', value_name='Confirmed')
+    deaths_transformed = deaths.melt(id_vars=['Country/Region'], var_name='Date', value_name='Deaths')
+    merged_data = pd.merge(confirmed_transformed, deaths_transformed, how="inner")
+
+    # format date to datetime object
+    merged_data['Date'] = pd.to_datetime(merged_data['Date'])
+
+    # calculate daily data for confirmed and death cases
+    merged_data['Daily Deaths'] = merged_data['Deaths'] - merged_data['Deaths'].shift()
+    merged_data['Daily Confirmed'] = merged_data['Confirmed'] - merged_data['Confirmed'].shift()
+
+    # fixing the value in the first row for calculated values and convert column to int32 type
+    merged_data['Daily Deaths'] = merged_data['Daily Deaths'].fillna(0).astype('int32')
+    merged_data['Daily Confirmed'] = merged_data['Daily Confirmed'].fillna(0).astype('int32')
+
+    return merged_data
 
 
-# list countries for analysis
-countries = ['Germany', 'Russia', 'US']
+df_ru = convert_data('Russia')
+df_de = convert_data('Germany')
+df_us = convert_data('US')
 
-df_confirmed = df_confirmed[df_confirmed['Country/Region'].isin(countries)]
-df_recovered = df_recovered[df_recovered['Country/Region'].isin(countries)]
-df_deaths = df_deaths[df_deaths['Country/Region'].isin(countries)]
-
-print(df_deaths.head())
-
-
-# print('vaccine', df_vaccine.head())
-#print('death', df_deaths.head())
-#print('df_recovered', df_recovered.head())
-# print('conf', df_confirmed.head())
-
-# Todo: create a function for each dataset
-
-# merge countries into one dataframe
-merged_df = pd.concat([df_confirmed, df_recovered, df_deaths])
-# rework
-#print(merged_df.head())
-
-
-test = merged_df.melt(id_vars=['Country/Region', 'Status'], var_name='Date', value_name='value')
-#test2 = test.pivot(index='Date', columns='Country/Region', values="value")
-
-print(test.tail(20))
-
-# test2.index = pd.to_datetime(test2.index)
-# test2.sort_index(inplace=True)
 
 # Todo: End create function
 
-# sns.set()
-# plt.plot(test2)
-# plt.title('Confirmed cases')
-# plt.ylabel('Amount')
-# plt.yticks()
-# plt.show()
-# sns.set_theme(style="whitegrid")
-# sns.lineplot(data=test2, palette="tab10", linewidth=2.5)
-# plt.show()
+def draw_chart(data,country,month):
+    fig, ax = plt.subplots(figsize=(10,10))
+    ax.plot(data['Date'], data['Confirmed'],data['Date'],data['Deaths'])
+    ax.set(xlabel="Date", ylabel="Confirmed cases", title="COVID-19 confirmed cases and deaths in "+country )
+    ax.xaxis.set_major_locator(years)
+    ax.xaxis.set_major_formatter(yearsFmt)
+    ax.xaxis.set_minor_locator(months)
+    ax.get_yaxis().set_major_formatter(
+        ticker.FuncFormatter(lambda x,p: format(int(x), ',')))
+    # plt.title('Confirmed cases')
+    # plt.ylabel('Amount')
+    plt.yticks()
+    plt.show()
+    # sns.set_theme(style="whitegrid")
+    # sns.lineplot(data=test2, palette="tab10", linewidth=2.5)
+    # plt.show()
 
-# transform the dataset and merge all together
+draw_chart(df_de,'Germany',6)
+
 
 
 # Sources
 
 # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transpose.html
 
-
-# df_confirmed = pd.read_csv('./data/time_series_covid19_confirmed_global.csv')
-# df_deaths = pd.read_csv('./data/time_series_covid19_deaths_global.csv')
-# df_recovered = pd.read_csv('./data/time_series_covid19_recovered_global.csv')
-# df_vaccine = pd.read_csv('./data/time_series_covid19_vaccine_global.csv')
