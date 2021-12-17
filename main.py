@@ -7,14 +7,14 @@
 
 
 # import libraries
+from datetime import datetime
 from pathlib import Path
 from re import search
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
+from dateutil.relativedelta import relativedelta
 import numpy as np
-import seaborn as sns
 import requests
 
 # Constants
@@ -130,55 +130,68 @@ df_de = convert_data('Germany')
 df_us = convert_data('US')
 
 
-print(df_ru[df_ru['Daily Confirmed']<0])
-
 # Todo: End create function
 
-def draw_chart(data, country, month):
-    color_confirmed='blue'
-    color_deaths='red'
+def draw_chart(data, country, **kwargs):
+    daily_conf = data['Daily Confirmed']
+    daily_deaths = data['Daily Deaths']
+
+    # Todo: add months selector
+    # if kwargs:
+    #     months = int(kwargs.get('m', None))
+    #     if months:
+    #         date = data.iloc[-1]['Date']
+    #         new_date = pd.Timestamp(datetime.date(date)-relativedelta(months=months))
+    #         #print(date < new_date)
+    #         daily_conf = data[data['Date'] < new_date]
+
+
+
+    color_confirmed = 'blue'
+    color_deaths = 'red'
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(8, 8))
     ax1.plot(data['Date'], data['Confirmed'], color=color_confirmed)
 
-    ax2.bar(data['Date'], data['Daily Confirmed'], color=color_confirmed)
+    ax2.bar(data['Date'], daily_conf, color=color_confirmed)
 
     ax1.set_title("COVID-19 confirmed cases in " + country)
-    ax1.tick_params(axis='x', labelsize=10,  labelcolor='black')
     ax1.tick_params(axis='y', labelsize=10, labelcolor=color_confirmed)
     ax1.set_ylabel('Confirmed cases', color=color_confirmed, fontsize=12)
     ax1.grid(True, alpha=.4)
+
     ax2.grid(True, alpha=.4)
-    ax2.set_ylabel("Daily", color=color_deaths, fontsize=12)
-    ax2.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
+    ax2.set_ylabel("Daily", color=color_confirmed, fontsize=12)
+    ax2.tick_params(axis='y', labelsize=10, labelcolor=color_confirmed)
 
     ax3.set_title("COVID-19 deaths in " + country)
     ax3.plot(data['Date'],data['Deaths'], color=color_deaths)
-    ax4.bar(data['Date'], data['Daily Deaths'], color=color_deaths, alpha=.6)
+    ax3.set_ylabel('Deaths total', color=color_deaths, fontsize=12)
+    ax3.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
     ax3.grid(True, alpha=.4)
+
+    ax4.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
+    ax4.bar(data['Date'], daily_deaths, color=color_deaths)
+    ax4.set_ylabel('Deaths daily', color=color_deaths, fontsize=12)
     ax4.grid(True, alpha=.4)
 
-
-
-    def onpick3(event):
-        ind = event.ind
-        print('onpick3 scatter:', ind, np.take(data['Date'], ind), np.take(data['Confirmed'], ind))
-
-    fig.canvas.mpl_connect('pick_event', onpick3)
-
     # fix to avoid scientific notation in the yaxis
-    ax1.get_yaxis().set_major_formatter(
-        ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    ax2.get_yaxis().set_major_formatter(
-        ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+    all_axes = [ax1, ax2, ax3, ax4]
+    for ax in all_axes:
+        ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
 
     fig.tight_layout()
     plt.show()
 
 
-draw_chart(df_de, 'Germany', 6)
-draw_chart(df_ru, 'Russia', 6)
-draw_chart(df_us, 'USA', 6)
+# arguments: dataframe, Country, months as m= number as string
+draw_chart(df_de, 'Germany', m='3')
+draw_chart(df_ru, 'Russia')
+draw_chart(df_us, 'USA')
+
+
+
+
 
 # Sources
 
