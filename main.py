@@ -147,39 +147,39 @@ def draw_chart(data, country, **kwargs):
 
 
 
-    color_confirmed = 'blue'
-    color_deaths = 'red'
+    COLOR_CONFIRMED = 'blue'
+    COLOR_DEATHS = 'red'
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(8, 8))
-    ax1.plot(data['Date'], data['Confirmed'], color=color_confirmed)
+    ax1.plot(data['Date'], data['Confirmed'], color=COLOR_CONFIRMED)
 
-    ax2.bar(data['Date'], daily_conf, color=color_confirmed)
+    ax2.bar(data['Date'], daily_conf, color=COLOR_CONFIRMED)
 
     ax1.set_title("COVID-19 confirmed cases in " + country)
-    ax1.tick_params(axis='y', labelsize=10, labelcolor=color_confirmed)
-    # ax1.set_ylabel('Confirmed cases', color=color_confirmed, fontsize=12)
+    ax1.tick_params(axis='y', labelsize=10, labelcolor=COLOR_CONFIRMED)
+    # ax1.set_ylabel('Confirmed cases', color=COLOR_CONFIRMED, fontsize=12)
     ax1.legend(['Confirmed cases'])
     ax1.grid(True, alpha=.4)
 
     ax2.grid(True, alpha=.4)
-    # ax2.set_ylabel("Daily", color=color_confirmed, fontsize=12)
+    # ax2.set_ylabel("Daily", color=COLOR_CONFIRMED, fontsize=12)
     ax2.legend(['Daily cases'])
-    ax2.tick_params(axis='y', labelsize=10, labelcolor=color_confirmed)
+    ax2.tick_params(axis='y', labelsize=10, labelcolor=COLOR_CONFIRMED)
 
     ax3.set_title("COVID-19 deaths in " + country)
-    ax3.plot(data['Date'],data['Deaths'], color=color_deaths)
-    # ax3.set_ylabel('Deaths total', color=color_deaths, fontsize=12)
+    ax3.plot(data['Date'],data['Deaths'], color=COLOR_DEATHS)
+    # ax3.set_ylabel('Deaths total', color=COLOR_DEATHS, fontsize=12)
     ax3.legend(['Deaths total'])
-    ax3.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
+    ax3.tick_params(axis='y', labelsize=10, labelcolor=COLOR_DEATHS)
     ax3.grid(True, alpha=.4)
 
-    ax4.tick_params(axis='y', labelsize=10, labelcolor=color_deaths)
-    ax4.bar(data['Date'], daily_deaths, color=color_deaths)
-    #ax4.set_ylabel('Deaths daily', color=color_deaths, fontsize=12)
+    ax4.tick_params(axis='y', labelsize=10, labelcolor=COLOR_DEATHS)
+    ax4.bar(data['Date'], daily_deaths, color=COLOR_DEATHS)
+    #ax4.set_ylabel('Deaths daily', color=COLOR_DEATHS, fontsize=12)
     ax4.legend(['Deaths daily'])
     ax4.grid(True, alpha=.4)
 
-    # fix to avoid scientific notation in the yaxis
+    # fix to avoid scientific notation in yaxis
     all_axes = [ax1, ax2, ax3, ax4]
     for ax in all_axes:
         ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
