@@ -1,4 +1,4 @@
-# Data from https://coronavirus.jhu.edu/map.html  - John Hopkins University (JHU)
+# Data from https://coronavirus.jhu.edu/map.html  - Johns Hopkins University (JHU)
 # Raw data for covid cases: https://github.com/CSSEGISandData/COVID-19
 # Raw data for vaccine: https://github.com/govex/COVID-19/tree/master/data_tables/vaccine_data
 # last update: 07.12.2021
@@ -19,62 +19,8 @@ import requests
 
 # Constants
 csv_data_folder = './data'
-covid_api_url = "https://api.covid19api.com/summary"
-
-
-#
-# # REST API based on John Hopkins University COVID-19 dataset.
-# response = requests.get(url=covid_api_url)
-#
-# # check for successfully request (status code 200)
-# if response.status_code == 200:
-#     result = response.json()
-# else:
-#     print('connection error')
-#
-# # get data for the countries into dataframe
-# df = pd.json_normalize(result['Countries'])
-#
-# # print(df.info())
-#
-# # List of columns to delete
-# del_columns = ['ID', 'CountryCode', 'Slug', 'NewRecovered', 'TotalRecovered']
-# df.drop(del_columns, axis=1, inplace=True)
-#
-# # convert date to datetime type and change the date format to YYYY-MM-DD using lambda function.
-# df['Date'] = pd.to_datetime(df['Date'])
-# df['Date'] = df['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
-#
-# # check whether the date of data is the same in all countries
-# date_is_same = df['Date'].eq(df['Date'].iloc[0]).all()
-#
-# # if there are any date different - create a list with countries where the date != date in first row.
-# if not date_is_same:
-#     date = df['Date'].iloc[0]
-#     country_list = []
-#
-#     for index, row in df.iterrows():
-#          if (row['Date'] != date):
-#              country_list.append(row['Country'])
-#
-#     if len(country_list) == 1:
-#         formatted_country_string = country_list[0]
-#     else:
-#         formatted_country_string = ', '.join(map(str, country_list))
-#         print("The data available for {country} is not updated and therefore exact information about the worldwide Covid-19 status is not possible.".format(country=formatted_country_string))
-#
-# else:
-#     # create an overview of covid19 cases worldwide
-#     total = df.sum(numeric_only=True)
-#
-#     print('###### Worldwide Covid-19 status update. Date: {date} ######'.format(date=pd.to_datetime(df['Date'].iloc[0]).strftime("%d %b %Y")))
-#     print('Total cases: {:d}'.format(int(total['TotalConfirmed'])))
-#     print('Total deaths: {:d}'.format(int(total['TotalDeaths'])))
-#     print('New cases: {:d}'.format(int(total['NewConfirmed'])))
-#     print('New deaths: {:d}'.format(int(total['NewDeaths'])))
-#     print('###############################################')
-#
-
+COLOR_CONFIRMED = 'blue'
+COLOR_DEATHS = 'red'
 
 # Getter for data from files.
 def get_from_csv(name):
@@ -92,6 +38,9 @@ df_vaccine = get_from_csv('vaccine')
 # print(df_confirmed.head())
 # print(df_deaths.head())
 # print(df_vaccine.head())
+
+print(df_confirmed.info())
+print(df_confirmed.describe())
 
 df_vaccine.rename(columns={'Country_Region': 'Country/Region'}, inplace=True)
 
@@ -142,13 +91,12 @@ def draw_chart(data, country, **kwargs):
     #     if months:
     #         date = data.iloc[-1]['Date']
     #         new_date = pd.Timestamp(datetime.date(date)-relativedelta(months=months))
-    #         #print(date < new_date)
+    #         # print(date < new_date)
     #         daily_conf = data[data['Date'] < new_date]
 
 
 
-    COLOR_CONFIRMED = 'blue'
-    COLOR_DEATHS = 'red'
+
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(8, 8))
     ax1.plot(data['Date'], data['Confirmed'], color=COLOR_CONFIRMED)
