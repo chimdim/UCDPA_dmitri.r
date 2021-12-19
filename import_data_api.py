@@ -21,13 +21,12 @@ else:
 # normalize data for the countries into a flat table.
 df = pd.json_normalize(result['Countries'])
 
-print(df.info())
-
-#
-
 # List of columns to drop
 drop_columns = ['ID', 'CountryCode', 'Slug', 'NewRecovered', 'TotalRecovered']
 df.drop(drop_columns, axis=1, inplace=True)
+
+#print('count',df.count() )
+#print('not null',df.notnull().sum())
 
 # convert date to datetime type and change the date format to YYYY-MM-DD using lambda function.
 df['Date'] = pd.to_datetime(df['Date'])
@@ -60,4 +59,4 @@ else:
     print('Total deaths: {:d}'.format(int(total['TotalDeaths'])))
     print('New cases: {:d}'.format(int(total['NewConfirmed'])))
     print('New deaths: {:d}'.format(int(total['NewDeaths'])))
-    print('###############################################')
+    print('############################################################')

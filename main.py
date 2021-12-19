@@ -21,6 +21,8 @@ import requests
 csv_data_folder = './data'
 COLOR_CONFIRMED = 'blue'
 COLOR_DEATHS = 'red'
+TERMS = {'confirmed_title': 'COVID-19 confirmed cases in ', 'deaths_title': 'COVID-19 deaths in '}
+
 
 # Getter for data from files.
 def get_from_csv(name):
@@ -39,8 +41,8 @@ df_vaccine = get_from_csv('vaccine')
 # print(df_deaths.head())
 # print(df_vaccine.head())
 
-print(df_confirmed.info())
-print(df_confirmed.describe())
+# print(df_confirmed.info())
+# print(df_confirmed.describe())
 
 df_vaccine.rename(columns={'Country_Region': 'Country/Region'}, inplace=True)
 
@@ -48,10 +50,6 @@ df_vaccine.drop(columns=['Province_State'], axis=1, inplace=True)
 df_confirmed.drop(columns=['Province/State', 'Lat', 'Long'], axis=1, inplace=True)
 df_deaths.drop(columns=['Province/State', 'Lat', 'Long'], axis=1, inplace=True)
 
-
-# add "status" column to the dataframes
-# df_confirmed['Status'] = 'confirmed'
-# df_deaths['Status'] = 'death'
 
 def convert_data(country):
     confirmed = df_confirmed[df_confirmed['Country/Region'] == country]
@@ -73,13 +71,15 @@ def convert_data(country):
 
     return merged_data
 
-
 df_ru = convert_data('Russia')
 df_de = convert_data('Germany')
 df_us = convert_data('US')
 
+# there is no "na" data in dataframe
+#print(df_ru.notna().sum())
+#print(df_de.notna().sum())
+#print(df_us.notna().sum())
 
-# Todo: End create function
 
 def draw_chart(data, country, **kwargs):
     daily_conf = data['Daily Confirmed']
@@ -95,15 +95,12 @@ def draw_chart(data, country, **kwargs):
     #         daily_conf = data[data['Date'] < new_date]
 
 
-
-
-
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,1, figsize=(8, 8))
     ax1.plot(data['Date'], data['Confirmed'], color=COLOR_CONFIRMED)
 
     ax2.bar(data['Date'], daily_conf, color=COLOR_CONFIRMED)
 
-    ax1.set_title("COVID-19 confirmed cases in " + country)
+    ax1.set_title(TERMS['confirmed_title'] + country)
     ax1.tick_params(axis='y', labelsize=10, labelcolor=COLOR_CONFIRMED)
     # ax1.set_ylabel('Confirmed cases', color=COLOR_CONFIRMED, fontsize=12)
     ax1.legend(['Confirmed cases'])
@@ -114,7 +111,7 @@ def draw_chart(data, country, **kwargs):
     ax2.legend(['Daily cases'])
     ax2.tick_params(axis='y', labelsize=10, labelcolor=COLOR_CONFIRMED)
 
-    ax3.set_title("COVID-19 deaths in " + country)
+    ax3.set_title(TERMS['deaths_title'] + country)
     ax3.plot(data['Date'],data['Deaths'], color=COLOR_DEATHS)
     # ax3.set_ylabel('Deaths total', color=COLOR_DEATHS, fontsize=12)
     ax3.legend(['Deaths total'])
@@ -131,7 +128,6 @@ def draw_chart(data, country, **kwargs):
     all_axes = [ax1, ax2, ax3, ax4]
     for ax in all_axes:
         ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-
     fig.tight_layout()
     plt.show()
 

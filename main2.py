@@ -54,7 +54,7 @@ df_moscow.drop(df_moscow[df_moscow['price'] > 65000000].index, inplace=True)
 df_moscow['price'] = df_moscow['price'] / 1000000
 
 # drop properties with less or equal rooms then 0
-df_moscow.drop(df_moscow[df_moscow['rooms'] < 0].index, inplace=True)
+df_moscow.drop(df_moscow[df_moscow['rooms'] < 1].index, inplace=True)
 
 # drop columns
 drop_columns = ['time', 'Unnamed: 0', 'region', 'date']
