@@ -7,20 +7,22 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
 from sklearn import linear_model
+
+
+# --- original dataset was removed from this project due large size ---
 # dataset source: https://www.kaggle.com/mrdaniilak/russia-real-estate-20182021
-# original dataset was removed from this project due large size
 
 # test = pd.read_csv("data2/all_v2.csv")
 
+# geo coordinates for Moscow
 # new_df = test[(test['geo_lat'] > 55.6) & (test['geo_lat'] < 55.8) & (test['geo_lon'] < 37.8) & (test['geo_lon'] > 37.4)]
 
 # new_df['region'].unique()
-
 # test[test['region'].isin([3,81])].to_csv('data2/moscow3.csv')
 
+
+# -- Export Moscow real estate dataset as CVS file for this project
 # test[test['region'] == 3].to_csv('data2/moscow.csv')
-
-
 df_moscow = pd.read_csv('data2/moscow.csv')
 
 # remove missing values
@@ -47,7 +49,7 @@ plt.figure(figsize=(10, 6))
 plt.hist(df_moscow['price'], bins=40)
 # plt.show()
 
-# reduce max price to 65 million rubel which reflects most of the properties in dataset
+# reduce max price to 65 million rubles which reflects most of the properties in dataset
 df_moscow.drop(df_moscow[df_moscow['price'] > 65000000].index, inplace=True)
 
 # display prices in millions
@@ -63,7 +65,7 @@ df_moscow.drop(columns=drop_columns, inplace=True)
 # Charts
 plt.figure(figsize=(10, 6))
 sns.histplot(df_moscow['price'])
-plt.xlabel('price (million rubel)')
+plt.xlabel('price (million rubles)')
 plt.ylabel('real estate objects')
 # plt.show()
 
