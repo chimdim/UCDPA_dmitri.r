@@ -123,14 +123,14 @@ print('lasso', lasso.score(X_test, y_test))
 
 classifiers = [
     linear_model.SGDRegressor(),
-    linear_model.BayesianRidge(),
     linear_model.ARDRegression(),
     linear_model.PassiveAggressiveRegressor(),
-    #linear_model.TheilSenRegressor(),
+    # linear_model.TheilSenRegressor(),
     linear_model.Lasso(),
     linear_model.Ridge(),
     linear_model.LinearRegression(),
-    svm.SVR(),]
+    # svm.SVR()
+]
 
 for item in classifiers:
     print(item)

@@ -9,8 +9,8 @@ from re import search
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from dateutil.relativedelta import relativedelta
-from datetime import datetime
+# from dateutil.relativedelta import relativedelta
+# from datetime import datetime
 
 # Constants
 csv_data_folder = './data'
@@ -20,10 +20,9 @@ COLOR_VACCINATED = 'green'
 TERMS = {'confirmed_title': 'COVID-19 confirmed cases in ', 'deaths_title': 'COVID-19 deaths in ',
          'deaths_total': 'Deaths total', 'deaths_daily': 'Daily deaths',
          'confirmed_total': 'All confirmed cases ', 'confirmed_daily': 'Daily cases',
-         'vaccinated_title': 'Partially vaccinated'}
+         'vaccinated_title': 'Fully vaccinated in '}
 
-
-# Getter for data from files.
+# Getter for data from files in folder csv_data_folder.
 def get_from_csv(name):
     for file_name in Path(csv_data_folder).glob("*.csv"):
         if search(name, str(file_name)):
@@ -88,12 +87,12 @@ df_us = convert_data('US')
 # print(df_us.notna().sum())
 
 
-def draw_chart(data, country, **kwargs):
+def draw_chart(data, country):
     daily_conf = data['Daily Confirmed']
     daily_deaths = data['Daily Deaths']
-    count = +1
 
-    # Todo: add time period selector
+    # Todo: add time period selector or rebuild the function with plotly library and range slider.
+    # example: draw_chart(df_de, 'Germany', m='3')
     # if kwargs:
     #     months = int(kwargs.get('m', None))
     #     if months:
@@ -101,6 +100,7 @@ def draw_chart(data, country, **kwargs):
     #         new_date = pd.Timestamp(datetime.date(date)-relativedelta(months=months))
     #         # print(date < new_date)
     #         daily_conf = data[data['Date'] < new_date]
+
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1, figsize=(8, 10))
     ax1.plot(data['Date'], data['Confirmed'], color=COLOR_CONFIRMED)
     ax1.set_title(TERMS['confirmed_title'] + country)
@@ -131,23 +131,19 @@ def draw_chart(data, country, **kwargs):
     ax5.set_title(TERMS['vaccinated_title'] + country)
     ax5.tick_params(axis='y', labelsize=10, labelcolor=COLOR_VACCINATED)
     ax5.plot(data['Date'], data['People_fully_vaccinated'], color=COLOR_VACCINATED)
-
     ax5.legend(['vaccinated'])
     ax5.grid(True, alpha=.4)
 
-    # fix to avoid scientific notation in yaxis
+    # fix to avoid exponential notation in yaxis
     all_axes = [ax1, ax2, ax3, ax4, ax5]
     for ax in all_axes:
         ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     fig.tight_layout()
 
 
-# arguments: dataframe, Country, months as m=number as string
-draw_chart(df_de, 'Germany', m='3')
+# arguments: dataframe, Country
+draw_chart(df_de, 'Germany')
 draw_chart(df_ru, 'Russia')
 draw_chart(df_us, 'USA')
+
 plt.show()
-
-# Sources
-
-# https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.transpose.html
