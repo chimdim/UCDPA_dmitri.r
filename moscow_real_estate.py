@@ -206,16 +206,10 @@ ax1.get_shared_x_axes().join(ax1, ax2, ax3)
 ax1.set_title('Mean absolute error')
 ax2.set_title('Root Mean Square Error')
 ax3.set_title('Score')
-# # ax1.set_ylabel('Scores')
-# # ax1.set_title('Scores by group and gender')
 ax1.set_xticks(x_ax, model_name)
-# # ax1.legend()
-#
-#
 ax1.bar_label(b1, padding=-20)
 ax2.bar_label(b2, padding=-20)
 ax3.bar_label(b3, padding=-20)
-# #
 fig.tight_layout()
 plt.show()
 
