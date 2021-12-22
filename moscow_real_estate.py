@@ -25,49 +25,56 @@ from xgboost import XGBRegressor
 
 # -- Export Moscow real estate dataset as CVS file for this project
 # test[test['region'] == 3].to_csv('data2/moscow.csv')
-df_moscow = pd.read_csv('data2/moscow.csv')
+df = pd.read_csv('data2/moscow.csv')
 
 # remove missing values
-df_moscow.dropna(inplace=True)
+df.dropna(inplace=True)
 
-# print(df_moscow.shape)
-# print(df_moscow.info())
-# print(df_moscow.describe())
-# print(df_moscow.head(10))
+# print(df.shape)
+# print(df.info())
+# print(df.describe())
+# print(df.head(10))
 
-# print(df_moscow.isna().sum())
+# print(df.isna().sum())
 
-# convert negative numbers in price column to positive
-df_moscow['price'] = df_moscow['price'].abs()
 
-# removing unrealistic prices for properties that may be due to monthly rent
-df_moscow.drop(df_moscow[df_moscow['price'] < 1000000].index, inplace=True)
+# convert negative numbers in price column to positive numbers
+df['price'] = df['price'].abs()
+
+# removing unrealistic prices for properties that may be due to monthly rent or fake announcement
+df.drop(df[df['price'] < 1000000].index, inplace=True)
 
 # removing too high prices
-df_moscow.drop(df_moscow[df_moscow['price'] > 300000000].index, inplace=True)
-
-# visualization of prices in the dataset
-# plt.figure(figsize=(10, 6))
-# plt.hist(df_moscow['price'], bins=40)
-# plt.show()
+df.drop(df[df['price'] > 300000000].index, inplace=True)
 
 # reduce max price to 65 million rubles which reflects most of the properties in dataset
-df_moscow.drop(df_moscow[df_moscow['price'] > 65000000].index, inplace=True)
+df.drop(df[df['price'] > 65000000].index, inplace=True)
 
 # display prices in millions
-df_moscow['price'] = df_moscow['price'] / 1000000
+df['price'] = df['price'] / 1000000
 
 # drop properties with less or equal rooms then 0
-df_moscow.drop(df_moscow[df_moscow['rooms'] < 1].index, inplace=True)
+df.drop(df[df['rooms'] < 1].index, inplace=True)
+
+# drop properties where kitchen area > area
+df.drop(df[df['kitchen_area'] > df['area']].index, inplace=True)
+
+# drop properties where area < 30 
+df.drop(df[df['area'] < 30].index, inplace=True)
+
+# drop properties where area / rooms < 9 m2
+df.drop(df[(df['area'] / df['rooms']) < 9].index, inplace=True)
 
 # drop columns
 drop_columns = ['time', 'Unnamed: 0', 'region', 'date']
-df_moscow.drop(columns=drop_columns, inplace=True)
-df_moscow.reset_index(drop=True, inplace=True)
+df.drop(columns=drop_columns, inplace=True)
+
+
+#df.reset_index(drop=True, inplace=True)
 
 # Chart: Histogram
 # fig, ax = plt.subplots(figsize=(8, 6))
-# ax = sns.histplot(df_moscow['price'])
+# ax = sns.histplot(df['price'])
 # plt.xlabel('Price (million rubles)')
 # plt.ylabel('Real estate objects')
 # plt.show()
@@ -75,19 +82,19 @@ df_moscow.reset_index(drop=True, inplace=True)
 #
 # # Chart: Heatmap
 # fig, ax = plt.subplots(figsize=(8, 6))
-# ax = sns.heatmap(df_moscow.corr(), cmap="YlGnBu", linewidth=0.2, cbar_kws={"shrink": .6})
+# ax = sns.heatmap(df.corr(), cmap="YlGnBu", linewidth=0.2, cbar_kws={"shrink": .6})
 # plt.xticks(rotation="-45")
 # ax.set_title('Correlation matrix', fontsize=18, pad=20)
 # fig.tight_layout()
 # plt.show()
 
 # Preparation for test and train data
-x = df_moscow.drop('price', axis=1).values
-y = df_moscow['price'].values.reshape(-1,1)
+x = df.drop('price', axis=1).values
+y = df['price'].values.reshape(-1,1)
 
 
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.5, random_state=10)
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=40)
 
 # Print function
 def print_results(model, name):
@@ -97,17 +104,20 @@ def print_results(model, name):
     print(name + '  best estimator: ', model.best_estimator_)
 
 
-linear = linear_model.LinearRegression()
+linear = LinearRegression()
 linear.fit(X_train, y_train)
 print(linear.score(X_test,y_test))
 
-lasso = linear_model.Lasso()
+lasso = Lasso(alpha=1.0)
 lasso.fit(X_train, y_train)
 print(lasso.score(X_test,y_test))
 
-ridge = linear_model.Ridge()
+ridge = Ridge(alpha=1.0)
+ridge.fit(X_train, y_train)
+print(ridge.score(X_test,y_test))
+y_pred = ridge.predict(X_test)
 
-
+print(r2_score(y_test,y_pred), mean_squared_error(y_test,y_pred))
 
 
 # # HistGradientBoostingRegressor
@@ -143,20 +153,27 @@ ridge = linear_model.Ridge()
 # print_results(gb, 'GradientBoostingRegressor')
 
 
-# Best estimator
-# xg = XGBRegressor(base_score=0.5, booster='gbtree', colsample_bylevel=1,
-#                   colsample_bynode=1, colsample_bytree=1, enable_categorical=False,
-#                   gamma=0.05, gpu_id=-1, importance_type=None,
-#                   interaction_constraints='', learning_rate=0.300000012,
-#                   max_delta_step=0, max_depth=10, min_child_weight=1,
-#                   monotone_constraints='()', n_estimators=100, n_jobs=8,
-#                   num_parallel_tree=1, predictor='auto', random_state=0, reg_alpha=0,
-#                   reg_lambda=1, scale_pos_weight=1, subsample=1, tree_method='exact',
-#                   validate_parameters=1, verbosity=None)
-#
-# xg.fit(X_train, y_train)
-# print(xg.score(X_test, y_test))
-# prediction = xg.predict(X_test)
-# print(pd.DataFrame({'col1':prediction, 'col2':y_test},).reset_index(drop=True).head(20))
-# pd.DataFrame({'col1':prediction, 'col2':y_test}).reset_index(drop=True).to_csv('test_prediction.csv')
+#Best estimator
+xg = XGBRegressor(base_score=0.5, booster='gbtree', colsample_bylevel=1,
+                  colsample_bynode=1, colsample_bytree=1, enable_categorical=False,
+                  gamma=0.05, gpu_id=-1, importance_type=None,
+                  interaction_constraints='', learning_rate=0.300000012,
+                  max_delta_step=0, max_depth=10, min_child_weight=1,
+                  monotone_constraints='()', n_estimators=100, n_jobs=8,
+                  num_parallel_tree=1, predictor='auto', random_state=0, reg_alpha=0,
+                  reg_lambda=1, scale_pos_weight=1, subsample=1, tree_method='exact',
+                  validate_parameters=1, verbosity=None)
 
+xg.fit(X_train, y_train)
+print(xg.score(X_test, y_test))
+prediction = xg.predict(X_test)
+#print(pd.DataFrame({'col1':prediction, 'col2':y_test},).reset_index(drop=True).head(20))
+#pd.DataFrame({'col1':prediction, 'col2':y_test}).reset_index(drop=True).to_csv('test_prediction.csv')
+print(r2_score(y_test,prediction), mean_squared_error(y_test,prediction))
+
+
+fig, (ax1, ax2) = plt.subplots(2,1, figsize=(8, 10))
+ax1 = sns.histplot(y_test, color='blue')
+ax2 = sns.histplot(prediction, color='red')
+plt.show()
+#
